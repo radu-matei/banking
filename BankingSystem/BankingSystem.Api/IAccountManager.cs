@@ -8,5 +8,6 @@ namespace BankingSystem.Api
         Account GetAccount(int accountNumber);
         void AddAccount(Account account);
         bool Contains(Account account);
+        decimal GetAccountBalance(int accountNumber);
     }
 }
