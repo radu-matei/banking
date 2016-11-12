@@ -36,5 +36,10 @@ namespace BankingSystem.Api
         {
             return _accountList.Contains(account);
         }
+
+        public decimal GetAccountBalance(int accountNumber)
+        {
+            return _accountList.FirstOrDefault(a => a.Number == accountNumber).Balance;
+        }
     }
 }
