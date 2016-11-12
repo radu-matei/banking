@@ -8,6 +8,9 @@ namespace BankingSystem.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddSingleton<IAccountManager, AccountManager>();
+            services.AddTransient<ITransactionManager, TransactionManager>();
         }
 
         public void Configure(IApplicationBuilder app)
