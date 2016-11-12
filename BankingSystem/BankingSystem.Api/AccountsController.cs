@@ -21,5 +21,10 @@ namespace BankingSystem.Api
         {
             return _accountManager.GetAccount(accountNumber);
         }
+
+        public decimal GetAccountBalance([FromQuery]int accountNumber)
+        {
+            return _accountManager.GetAccountBalance(accountNumber);
+        }
     }
 }
