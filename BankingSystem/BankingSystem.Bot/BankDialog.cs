@@ -11,6 +11,9 @@ namespace BankingSystem.Bot
         private const string helpMessage = "Hello, this is your bank bot!";
         private bool userWelcomed;
 
+        private string accountNumber;
+        private string userName;
+
         public async Task StartAsync(IDialogContext context)
         {
             context.Wait(MessageReceivedAsync);
@@ -19,11 +22,10 @@ namespace BankingSystem.Bot
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
-            string userName;
 
             if (!context.UserData.TryGetValue(ConstantKeys.UserNameKey, out userName))
             {
-                PromptDialog.Text(context, this.ResumeAfterPrompt, "Before get started, please tell me your name?");
+                PromptDialog.Text(context, this.ResumeAfterUserNamePrompt, "Before get started, please tell me your name?");
                 return;
             }
 
@@ -36,25 +38,48 @@ namespace BankingSystem.Bot
                 return;
             }
 
-            if (message.Text.Equals("test"))
+            if (message.Text.Equals("balance"))
             {
-                await context.PostAsync($"{userName}, this is cool!");
+                var bankService = new BankService();
+                await context.PostAsync($"{userName}, your balance is {await bankService.GetAccountBalance(this.accountNumber)}!");
             }
 
             context.Wait(MessageReceivedAsync);
         }
 
-
-        private async Task ResumeAfterPrompt(IDialogContext context, IAwaitable<string> result)
+        private async Task ResumeAfterAccountNumberPrompt(IDialogContext context, IAwaitable<string> result)
         {
             try
             {
-                var userName = await result;
+                accountNumber = await result;
+
+                await context.PostAsync($"Your account number is {accountNumber}");
+
+                context.UserData.SetValue(ConstantKeys.AccountNumberKey, accountNumber);
+            }
+            catch (TooManyAttemptsException)
+            {
+            }
+
+            context.Wait(MessageReceivedAsync);
+        }
+
+        private async Task ResumeAfterUserNamePrompt(IDialogContext context, IAwaitable<string> result)
+        {
+            try
+            {
+                userName = await result;
                 this.userWelcomed = true;
 
                 await context.PostAsync($"Welcome {userName}! {helpMessage}");
 
                 context.UserData.SetValue(ConstantKeys.UserNameKey, userName);
+
+                if (!context.UserData.TryGetValue(ConstantKeys.AccountNumberKey, out accountNumber))
+                {
+                    PromptDialog.Text(context, this.ResumeAfterAccountNumberPrompt, $"{userName}, what is your bank account?");
+                    return;
+                }
             }
             catch (TooManyAttemptsException)
             {
